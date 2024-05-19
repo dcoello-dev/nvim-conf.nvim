@@ -130,6 +130,7 @@ require('lazy').setup {
   'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
   'APZelos/blamer.nvim', -- Git blame
   'mg979/vim-visual-multi', -- multicursor
+  {"ellisonleao/glow.nvim", config = true, cmd = "Glow"},
 
   -- "gc" to comment visual regions/lines
   { 'numToStr/Comment.nvim', opts = {} },
