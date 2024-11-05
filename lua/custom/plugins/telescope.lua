@@ -104,8 +104,12 @@ return {
             end, { desc = '[S]earch [/] in Open Files' })
 
             -- Shortcut for searching your neovim configuration files
-            vim.keymap.set('n', '<leader>sn', function()
+            vim.keymap.set('n', '<leader>sc', function()
                 builtin.find_files { cwd = vim.fn.stdpath 'config' }
+            end, { desc = '[S]earch Neovim [C]onfig files' })
+            -- Shortcut for searching your neovim configuration files
+            vim.keymap.set('n', '<leader>sn', function()
+                builtin.find_files { cwd = '/home/dcoello/vaults/Context' }
             end, { desc = '[S]earch [N]eovim files' })
         end,
     },
