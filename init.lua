@@ -1,5 +1,4 @@
 -- Set <space> as the leader key
---  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
@@ -10,6 +9,31 @@ vim.opt.number = true
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.opt.mouse = 'a'
 
+function loki_build(opts)
+vim.opt.makeprg = 'bash dev.sh -b'
+  vim.cmd.make()
+end
+
+function loki_test(opts)
+vim.opt.makeprg = 'bash dev.sh -t'
+  vim.cmd.make()
+end
+
+vim.api.nvim_create_user_command(
+  "Build",
+  function(opts)
+    loki_build(opts.args)
+  end,
+  { nargs = '?' }
+)
+
+vim.api.nvim_create_user_command(
+  "Test",
+  function(opts)
+    loki_test(opts.args)
+  end,
+  { nargs = '?' }
+)
 -- Don't show the mode, since it's already in status line
 vim.opt.showmode = false
 
@@ -57,7 +81,9 @@ vim.opt.scrolloff = 10
 -- Set highlight on search, but clear on pressing <Esc> in normal mode
 vim.opt.hlsearch = true
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
+vim.keymap.set('n', '<leader>pb', '<cmd>NvimTreeToggle<CR>', { desc = 'Project [B]isualization' })
 vim.keymap.set('n', '<leader>pv', vim.cmd.Ex, { desc = 'Project [V]isualization' })
+vim.keymap.set('n', '<leader>pc', '<cmd>NvimTreeCollapse<CR>', { desc = 'Project [V]isualization' })
 vim.keymap.set('n', '<leader>ba', '<cmd>%bdelete|edit #|normal`"<CR>', { desc = 'Close [A]ll buffers except current'})
 vim.keymap.set('n', '<leader>bx', '<cmd>bd<CR>', { desc = 'Close [X] current buffer'})
 
@@ -130,8 +156,136 @@ require('lazy').setup {
   'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
   'APZelos/blamer.nvim', -- Git blame
   'mg979/vim-visual-multi', -- multicursor
+  'nvim-lualine/lualine.nvim', -- Fancier statusline
+  'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
+  "tpope/vim-surround",
+  "rlane/pounce.nvim",
+  -- Tree
+  -- {
+  --   "nvim-tree/nvim-tree.lua",
+  --   version = "*",
+  --   lazy = false,
+  --   requires = {
+  --     "nvim-tree/nvim-web-devicons",
+  --   },
+  --   config = function()
+  --     require("nvim-tree").setup {
+  --       update_focused_file = {
+  --         enable = true,
+  --       }
+  --     }
+  --   end,
+  -- },
+--   {
+--     "tris203/precognition.nvim",
+--     --event = "VeryLazy",
+--     opts = {
+--     -- startVisible = true,
+--     -- showBlankVirtLine = true,
+--     highlightColor = { link = "IncSearch" },
+--     -- hints = {
+--     --      Caret = { text = "^", prio = 2 },
+--     --      Dollar = { text = "$", prio = 1 },
+--     --      MatchingPair = { text = "%", prio = 5 },
+--     --      Zero = { text = "0", prio = 1 },
+--     --      w = { text = "w", prio = 10 },
+--     --      b = { text = "b", prio = 9 },
+--     --      e = { text = "e", prio = 8 },
+--     --      W = { text = "W", prio = 7 },
+--     --      B = { text = "B", prio = 6 },
+--     --      E = { text = "E", prio = 5 },
+--     -- },
+--     -- gutterHints = {
+--     --     G = { text = "G", prio = 10 },
+--     --     gg = { text = "gg", prio = 9 },
+--     --     PrevParagraph = { text = "{", prio = 8 },
+--     --     NextParagraph = { text = "}", prio = 8 },
+--     -- },
+--     -- disabled_fts = {
+--     --     "startify",
+--     -- },
+--     },
+-- },
+  {
+    'aspeddro/slides.nvim',
+    config = function ()
+      require'slides'.setup{}
+    end
+  },
+  {
+    'dcoello-dev/sandbox.nvim',
+    dependencies = {
+      'nvim-telescope/telescope.nvim',
+      'akinsho/toggleterm.nvim',
+      'ellisonleao/glow.nvim',
+    },
+    config= function()
+      require("sandbox").setup({
+        work_idea_path="/home/dcoello/doc/codebase/ideas/",
+        ideas_path="/home/dcoello/doc/codebase/ideas/",
+      })
+    end
+  },
+  {
+    "rachartier/tiny-code-action.nvim",
+    dependencies = {
+      {"nvim-lua/plenary.nvim"},
+      {"nvim-telescope/telescope.nvim"},
+    },
+    event = "LspAttach",
+    config = function()
+      require('tiny-code-action').setup()
+    end
+  },
+  { "lukas-reineke/indent-blankline.nvim", main = "ibl", opts = {} },
+  -- {
+  --   "rcarriga/nvim-notify",
+  --   config = function()
+  --     require("notify").setup({
+  --       background_colour = "#000000",
+  --       enabled = false,
+  --     })
+  --   end
+  -- },
+  {
+    "folke/noice.nvim",
+    config = function()
+      require("noice").setup({
+        -- add any options here
+        routes = {
+          {
+            filter = {
+              event = 'msg_show',
+              any = {
+                { find = '%d+L, %d+B' },
+                { find = '; after #%d+' },
+                { find = '; before #%d+' },
+                { find = '%d fewer lines' },
+                { find = '%d more lines' },
+              },
+            },
+            opts = { skip = true },
+          }
+        },
+      })
+    end,
+    dependencies = {
+      -- if you lazy-load any plugin below, make sure to add proper `module="..."` entries
+      "MunifTanjim/nui.nvim",
+      -- OPTIONAL:
+      --   `nvim-notify` is only needed, if you want to use the notification view.
+      --   If not available, we use `mini` as the fallback
+    }
+  },
   {"ellisonleao/glow.nvim", config = true, cmd = "Glow"},
-
+  {
+    "folke/zen-mode.nvim",
+    opts = {
+      -- your configuration comes here
+      -- or leave it empty to use the default settings
+      -- refer to the configuration section below
+    }
+  },
   -- "gc" to comment visual regions/lines
   { 'numToStr/Comment.nvim', opts = {} },
   { -- Useful plugin to show you pending keybinds.
@@ -173,18 +327,179 @@ require('lazy').setup {
       require('mini.surround').setup()
     end,
   },
-
+  {
+    -- amongst your other plugins
+    -- {'akinsho/toggleterm.nvim', version = "*", config = true}
+    -- or
+    {
+      'akinsho/toggleterm.nvim', version = "*", opts = {
+        --[[ things you want to change go here]]
+        open_mapping = [[<c-a>]],  
+        hide_numbers = false,
+        direction = 'tab',
+      }
+    }
+  },
+  {
+  "ribelo/taskwarrior.nvim",
+    opts = {
+      -- your configuration comes here
+      -- or leave it empty to use the default settings
+      -- refer to the configuration section below
+    },
+    -- or 
+    config = true
+},
   {
     "mbbill/undotree"
+  },
+  {
+    {
+      'mfussenegger/nvim-dap',
+      dependencies = {
+        {
+          'rcarriga/nvim-dap-ui',
+          dependencies = 'nvim-neotest/nvim-nio'
+        },
+        'ldelossa/nvim-dap-projects'
+      },
+      config= function()
+
+        local map = function(keys, func, desc)
+          vim.keymap.set('n', keys, func, { desc = 'DAP: ' .. desc })
+        end
+        local dap, dapui = require("dap"), require("dapui")
+        dapui.setup()
+        map( "<leader>dx", function() dapui.toggle() end, "toggle dap")
+        map( "<leader>db", function() dap.toggle_breakpoint() end, "toggle breakpoint")
+        map( "<leader>dc", function() dap.continue() end, "continue") 
+        map( "<leader>df", function() dap.terminate() end, "terminate")
+        map( "<leader>di", function() dap.step_into() end, "into")
+        map( "<leader>do", function() dap.step_out() end, "out") 
+        map( "<leader>dn", function() dap.step_over() end, "over")
+
+        dap.adapters.cpp = {
+          type = 'executable',
+          attach = {
+            pidProperty = "pid",
+            pidSelect = "ask"
+          },
+          command = 'lldb-vscode-10',
+          env = {
+            LLDB_LAUNCH_FLAG_LAUNCH_IN_TTY = "YES"
+          },
+          name = "lldb"
+        }
+
+        dap.configurations.cpp = {
+          {
+            name = "lldb",
+            type = "cpp",
+            request = "launch",
+            program = function()
+              return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/', 'file')
+            end,
+            cwd = '${workspaceFolder}/../01_build/telemetry-consumer-app_gcc9-linux-x86_64/Debug',
+            externalTerminal = false,
+            stopOnEntry = false,
+            args = {}
+          },
+        }
+
+        local exec_dap = function(prompt_bufnr)
+          local selected_entry = require("telescope.actions.state").get_selected_entry()
+          local cpp_config = module.make_config() -- returns my basic config object with program set to a function that prompts vim.fn.input
+          cpp_config.program = "../01_build/telemetry-consumer-app_gcc9-linux-x86_64/Debug" .. selected_entry[1]
+          require("telescope.actions").close(prompt_bufnr)
+          dap.run(cpp_config)
+        end
+
+        map('<leader>dx', function()
+          dapui.toggle()
+          require("telescope.builtin").find_files({
+            attach_mappings = function(_, doit)
+              doit("n", "<cr>", exec_dap)
+              return true
+            end,
+          })
+        end, "execute bin")
+      end
+    }
   },
   { import = 'custom.plugins' },
 }
 
 vim.keymap.set('n', '<leader><F5>', vim.cmd.UndotreeToggle)
 vim.api.nvim_set_hl(0, 'LineNr', { fg = '#ff4e00', bold = true })
+vim.api.nvim_set_hl(0, 'CursorLineNr', { fg = '#80FF33', bold = true })
 vim.api.nvim_set_hl(0, 'Blamer', { fg = '#ff4e00', bold = true })
 vim.api.nvim_set_hl(0, 'Visual', {fg= "#eb03fc", bg = "#35fc03", bold=true} )
 vim.g.blamer_enabled = true
 vim.g.blamer_delay = 500
 
+require('lualine').setup {
+  options = {
+    icons_enabled = true,
+    component_separators = '|',
+    section_separators = '',
+  },
+  sections = {
+    lualine_x = {
+      {
+        require("noice").api.statusline.mode.get,
+        cond = require("noice").api.statusline.mode.has,
+        color = { fg = "#ff9e64" },
+      },
+      {
+        require("noice").api.status.command.get,
+        cond = require("noice").api.status.command.has,
+        color = { fg = "#ff9e64" },
+      },
+    },
+    lualine_a = {
+      {
+        'buffers',
+      }
+    }
+  }
+}
 
+
+local cmp_nvim_lsp = require "cmp_nvim_lsp"
+
+require("lspconfig").clangd.setup {
+  on_attach = on_attach,
+  capabilities = cmp_nvim_lsp.default_capabilities(),
+  cmd = {
+    "clangd",
+    "--offset-encoding=utf-16",
+  },
+}
+
+vim.keymap.set("n", "<leader>ca", function()
+	require("tiny-code-action").code_action()
+end, { noremap = true, silent = true })
+
+vim.keymap.set("n", "<leader>tl", function()
+  require("taskwarrior_nvim").browser({"ready"})
+end, { noremap = true, silent = true })
+
+--  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
+--
+local lspconfig = require 'lspconfig'
+local configs = require 'lspconfig.configs'
+
+if not configs.lspdc_lsp then
+  configs.lspdc_lsp = {
+    default_config = {
+      cmd = { 'python3', '/home/dcoello/code/lsp-dc/main.py' },
+      root_dir = lspconfig.util.root_pattern('.git'),
+      filetypes = { 'python' },
+    },
+  }
+end
+lspconfig.lspdc_lsp.setup {}
+
+vim.keymap.set("n", "f", function()
+  require("pounce").pounce { }
+end, { noremap = true, silent = true })
