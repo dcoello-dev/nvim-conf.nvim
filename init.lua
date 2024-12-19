@@ -1,6 +1,10 @@
 -- Set <space> as the leader key
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
+vim.opt.tabstop = 2
+vim.opt.softtabstop=2
+vim.opt.shiftwidth=2
+vim.expandtab = true
 
 -- Make line numbers default
 vim.opt.number = true
@@ -107,11 +111,22 @@ function GetAssociatedFiles()
     end
 end
 
+local function toggle_quickfix()
+  local windows = vim.fn.getwininfo()
+  for _, win in pairs(windows) do
+    if win["quickfix"] == 1 then
+      vim.cmd.cclose()
+      return
+    end
+  end
+  vim.cmd.copen()
+end
 -- Diagnostic keymaps
 vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous [D]iagnostic message' })
 vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next [D]iagnostic message' })
-vim.keymap.set("n", "]q", "<cmd>cnext<CR>zz", { desc = "Forward qfixlist" })
-vim.keymap.set("n", "[q", "<cmd>cprev<CR>zz", { desc = "Backward qfixlist" })
+vim.keymap.set("n", "<M-n>", "<cmd>cnext<CR>zz", { desc = "Forward qfixlist" })
+vim.keymap.set("n", "<M-p>", "<cmd>cprev<CR>zz", { desc = "Backward qfixlist" })
+vim.keymap.set("n", "<M-o>",toggle_quickfix, { desc = "toggle quickfix" })
 vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Show diagnostic [E]rror messages' })
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
 
@@ -160,52 +175,6 @@ require('lazy').setup {
   'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
   "tpope/vim-surround",
   "rlane/pounce.nvim",
-  -- Tree
-  -- {
-  --   "nvim-tree/nvim-tree.lua",
-  --   version = "*",
-  --   lazy = false,
-  --   requires = {
-  --     "nvim-tree/nvim-web-devicons",
-  --   },
-  --   config = function()
-  --     require("nvim-tree").setup {
-  --       update_focused_file = {
-  --         enable = true,
-  --       }
-  --     }
-  --   end,
-  -- },
---   {
---     "tris203/precognition.nvim",
---     --event = "VeryLazy",
---     opts = {
---     -- startVisible = true,
---     -- showBlankVirtLine = true,
---     highlightColor = { link = "IncSearch" },
---     -- hints = {
---     --      Caret = { text = "^", prio = 2 },
---     --      Dollar = { text = "$", prio = 1 },
---     --      MatchingPair = { text = "%", prio = 5 },
---     --      Zero = { text = "0", prio = 1 },
---     --      w = { text = "w", prio = 10 },
---     --      b = { text = "b", prio = 9 },
---     --      e = { text = "e", prio = 8 },
---     --      W = { text = "W", prio = 7 },
---     --      B = { text = "B", prio = 6 },
---     --      E = { text = "E", prio = 5 },
---     -- },
---     -- gutterHints = {
---     --     G = { text = "G", prio = 10 },
---     --     gg = { text = "gg", prio = 9 },
---     --     PrevParagraph = { text = "{", prio = 8 },
---     --     NextParagraph = { text = "}", prio = 8 },
---     -- },
---     -- disabled_fts = {
---     --     "startify",
---     -- },
---     },
--- },
   {
     'aspeddro/slides.nvim',
     config = function ()
@@ -223,6 +192,7 @@ require('lazy').setup {
       require("sandbox").setup({
         work_idea_path="/home/dcoello/doc/codebase/ideas/",
         ideas_path="/home/dcoello/doc/codebase/ideas/",
+        conf_path="/home/dcoello/doc/codebase/environments.toml",      -- fallbacks on SANDBOX_CONF env var
       })
     end
   },
@@ -238,15 +208,6 @@ require('lazy').setup {
     end
   },
   { "lukas-reineke/indent-blankline.nvim", main = "ibl", opts = {} },
-  -- {
-  --   "rcarriga/nvim-notify",
-  --   config = function()
-  --     require("notify").setup({
-  --       background_colour = "#000000",
-  --       enabled = false,
-  --     })
-  --   end
-  -- },
   {
     "folke/noice.nvim",
     config = function()
@@ -270,11 +231,7 @@ require('lazy').setup {
       })
     end,
     dependencies = {
-      -- if you lazy-load any plugin below, make sure to add proper `module="..."` entries
       "MunifTanjim/nui.nvim",
-      -- OPTIONAL:
-      --   `nvim-notify` is only needed, if you want to use the notification view.
-      --   If not available, we use `mini` as the fallback
     }
   },
   {"ellisonleao/glow.nvim", config = true, cmd = "Glow"},
@@ -456,11 +413,6 @@ require('lualine').setup {
         color = { fg = "#ff9e64" },
       },
     },
-    lualine_a = {
-      {
-        'buffers',
-      }
-    }
   }
 }
 
@@ -475,30 +427,6 @@ require("lspconfig").clangd.setup {
     "--offset-encoding=utf-16",
   },
 }
-
-vim.keymap.set("n", "<leader>ca", function()
-	require("tiny-code-action").code_action()
-end, { noremap = true, silent = true })
-
-vim.keymap.set("n", "<leader>tl", function()
-  require("taskwarrior_nvim").browser({"ready"})
-end, { noremap = true, silent = true })
-
---  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
---
-local lspconfig = require 'lspconfig'
-local configs = require 'lspconfig.configs'
-
-if not configs.lspdc_lsp then
-  configs.lspdc_lsp = {
-    default_config = {
-      cmd = { 'python3', '/home/dcoello/code/lsp-dc/main.py' },
-      root_dir = lspconfig.util.root_pattern('.git'),
-      filetypes = { 'python' },
-    },
-  }
-end
-lspconfig.lspdc_lsp.setup {}
 
 vim.keymap.set("n", "f", function()
   require("pounce").pounce { }
