@@ -9,6 +9,7 @@ return {
     notifier = {enabled = true, timeout = 3000},
     quickfile = {enabled = true},
     statuscolumn = {enabled = true},
+    picker = { enabled = true },
     indent = {},
     zen = {
       enabled = true,
@@ -57,6 +58,11 @@ return {
       "<leader>un",
       function() Snacks.notifier.hide() end,
       desc = "Dismiss All Notifications"
+    },
+    {
+      "<leader>gp",
+      function() Snacks.picker.projects() end,
+      desc = "[G]o to [P]rojects"
     },
     {
       "<leader>N",
