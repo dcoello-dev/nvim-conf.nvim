@@ -1,82 +1,44 @@
 return {
-  { -- Autocompletion
-    'hrsh7th/nvim-cmp',
-    event = 'InsertEnter',
-    dependencies = {
-      -- Snippet Engine & its associated nvim-cmp source
-      {
-        'L3MON4D3/LuaSnip',
-        build = (function()
-          -- Build Step is needed for regex support in snippets
-          -- This step is not supported in many windows environments
-          -- Remove the below condition to re-enable on windows
-          if vim.fn.has 'win32' == 1 or vim.fn.executable 'make' == 0 then
-            return
-          end
-          return 'make install_jsregexp'
-        end)()
-      },
-      'saadparwaiz1/cmp_luasnip',
+  'saghen/blink.cmp',
+  dependencies = { 
+    'rafamadriz/friendly-snippets',
+    'moyiz/blink-emoji.nvim'
+  },
+  version = '1.*',
 
-      -- Adds other completion capabilities.
-      --  nvim-cmp does not ship with all sources by default. They are split
-      --  into multiple repos for maintenance purposes.
-      'hrsh7th/cmp-nvim-lsp',
-      'hrsh7th/cmp-path'
+  ---@module 'blink.cmp'
+  ---@type blink.cmp.Config
+  opts = {
+    -- C-space: Open menu or open docs if already open
+    -- C-n/C-p or Up/Down: Select next/previous item
+    -- C-e: Hide menu
+    -- C-k: Toggle signature help (if signature.enabled = true)
+    -- tab on snippet to go to next field
+    keymap = { preset = 'default' },
 
-      -- If you want to add a bunch of pre-configured snippets,
-      --    you can use this plugin to help you. It even has snippets
-      --    for various frameworks/libraries/etc. but you will have to
-      --    set up the ones that are useful for you.
-      -- 'rafamadriz/friendly-snippets',
+    appearance = {
+      nerd_font_variant = 'mono'
     },
-    config = function()
-      -- See `:help cmp`
-      local cmp = require 'cmp'
-      local luasnip = require 'luasnip'
-      local aex_parser = function()
-        local branch = vim.fn.system(
-          "git branch --show-current 2> /dev/null | tr -d '\n'")
-        if branch ~= "" then
-          local pattern = "aex%-(%d+)"
-          local aex = branch:match(pattern)
-          -- local aex = string.gsub(branch ,pattern .. "%]", "")
-          return "AEX-" .. aex
-        else
-          return ""
-        end
-      end
-
-      local s = luasnip.snippet
-      local f = luasnip.function_node
-
-      luasnip.add_snippets("gitcommit", {s("aex", {f(aex_parser)})})
-      luasnip.config.setup {}
-
-      cmp.setup {
-        snippet = {expand = function(args) luasnip.lsp_expand(args.body) end},
-        completion = {completeopt = 'menu,menuone,noinsert'},
-        mapping = cmp.mapping.preset.insert {
-          ['<C-n>'] = cmp.mapping.select_next_item(),
-          ['<C-p>'] = cmp.mapping.select_prev_item(),
-          ['<C-y>'] = cmp.mapping.confirm {select = true},
-          ['<C-Space>'] = cmp.mapping.complete {},
-          ['<C-l>'] = cmp.mapping(function()
-            if luasnip.expand_or_locally_jumpable() then
-              luasnip.expand_or_jump()
-            end
-          end, {'i', 's'}),
-          ['<C-h>'] = cmp.mapping(function()
-            if luasnip.locally_jumpable(-1) then luasnip.jump(-1) end
-          end, {'i', 's'})
-        },
-        sources = {{name = 'nvim_lsp'}, {name = 'luasnip'}, {name = 'path'}}
+    completion = { documentation = { auto_show = true } },
+    signature = {enabled = true},
+    sources = {
+      default = { 'lsp', 'path', 'snippets', 'buffer', "emoji" },
+      providers = {
+        emoji = {
+          module = "blink-emoji",
+          name = "Emoji",
+          score_offset = 15, -- Tune by preference
+          opts = { insert = true }, -- Insert emoji (default) or complete its name
+          should_show_items = function()
+            return vim.tbl_contains(
+              { "gitcommit", "markdown" },
+              vim.o.filetype
+            )
+          end,
+        }
       }
-
-      require("luasnip.loaders.from_vscode").load({
-        paths = {"/home/dcoello/snippets/"}
-      })
-    end
-  }
-
+    },
+    fuzzy = { implementation = "prefer_rust_with_warning" }
+  },
+  opts_extend = { "sources.default" }
 }
