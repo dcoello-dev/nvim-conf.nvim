@@ -1,22 +1,23 @@
 return {
   {'mracos/mermaid.vim'},
   {"ellisonleao/glow.nvim", config = true, cmd = "Glow"},
-  -- {
-  --   "3rd/image.nvim",
-  --   dependencies = {},
-  --   opts = {},
-  --   config = function()
-  --     require('image').setup({
-  --       integrations = {
-  --         markdown = {
-  --           resolve_image_path = function(document_path, image_path, fallback)
-  --             return fallback(document_path, image_path)
-  --           end
-  --         }
-  --       }
-  --     })
-  --   end
-  -- },
+  {
+    "3rd/image.nvim",
+    dependencies = {},
+    opts = {},
+    config = function()
+      require('image').setup({
+        tmux_show_only_in_active_window = true,
+        integrations = {
+          markdown = {
+            resolve_image_path = function(document_path, image_path, fallback)
+              return fallback(document_path, image_path)
+            end
+          }
+        }
+      })
+    end
+  },
   {
     'dcoello-dev/sandbox.nvim',
     dependencies = {
