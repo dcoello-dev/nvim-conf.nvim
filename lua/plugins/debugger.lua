@@ -8,9 +8,11 @@ return {
     {
       'mfussenegger/nvim-dap',
       dependencies = {
-        {'rcarriga/nvim-dap-ui', dependencies = 'nvim-neotest/nvim-nio'}
+        {'rcarriga/nvim-dap-ui', dependencies = 'nvim-neotest/nvim-nio'},
+        {'theHamsta/nvim-dap-virtual-text'}
       },
       config = function()
+        require("nvim-dap-virtual-text").setup()
 
         local map = function(keys, func, desc)
           vim.keymap.set('n', keys, func, {desc = 'DAP: ' .. desc})
@@ -26,28 +28,17 @@ return {
         map("<leader>do", function() dap.step_out() end, "out")
         map("<leader>dn", function() dap.step_over() end, "over")
 
-        dap.adapters.cpp = {
-          type = 'executable',
-          attach = {pidProperty = "pid", pidSelect = "ask"},
-          command = 'lldb-vscode-14',
-          env = {LLDB_LAUNCH_FLAG_LAUNCH_IN_TTY = "YES"},
-          name = "lldb"
+        dap.adapters.codelldb = {
+          type = "server",
+          port = "${port}",
+          executable = {
+            command = "codelldb",
+            args = { "--port", "${port}" },
+          },
         }
 
-        dap.configurations.cpp = {
-          {
-            name = "lldb",
-            type = "cpp",
-            request = "launch",
-            program = os.getenv("DEXE"),
-            cwd = '${workspaceFolder}/',
-            externalTerminal = false,
-            stopOnEntry = false,
-            args = {}
-          }
-        }
 
-        require('dap-python').setup()
+        require('dap-python').setup("python3")
       end
     }
   }

@@ -23,6 +23,12 @@ vim.opt.inccommand = 'split'
 vim.opt.cursorline = true
 vim.opt.scrolloff = 10
 vim.opt.hlsearch = true
+vim.o.autoread = true
+
+vim.api.nvim_create_autocmd({ "BufEnter", "CursorHold", "CursorHoldI", "FocusGained" }, {
+  command = "if mode() != 'c' | checktime | endif",
+  pattern = { "*" },
+})
 
 local utils = require("ext.utils")
 require("ext.autocommands")
@@ -75,5 +81,25 @@ require('lazy').setup {
     'mg979/vim-visual-multi',
     -- LuaFormatter on
   {'grzegorzszczepanek/gamify.nvim', config = function() require('gamify') end},
+  { 
+    'stevearc/overseer.nvim',
+    opts = {},
+  },
   {import = 'plugins'}
 }
+vim.keymap.set('n', '<M-j>', '<cmd>OverseerToggle<CR>',
+  {desc = 'Toggle oversser panel'})
+vim.keymap.set('n', '<M-k>', '<cmd>OverseerRun<CR>',
+  {desc = 'Overseer run'})
+
+require("overseer").setup({
+  dap = false,
+  component_aliases = {
+    default_vscode = {
+      "default",
+      "on_output_quickfix",
+    },
+  },
+})
+
+require("overseer").enable_dap()
