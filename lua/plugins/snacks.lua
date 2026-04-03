@@ -9,7 +9,13 @@ return {
     notifier = {enabled = true, timeout = 3000},
     quickfile = {enabled = true},
     statuscolumn = {enabled = true},
-    picker = { enabled = true },
+    picker = {
+      enabled = true,
+      sources = {
+        files = { layout = { preset = "ivy" } },
+        select = { layout = { preset = "dropdown" } },
+      },
+    },
     indent = {},
     zen = {
       enabled = true,
@@ -30,6 +36,64 @@ return {
     }
   },
   keys = {
+    { "<leader>sh", function() Snacks.picker.help() end, desc = "[S]earch [H]elp" },
+    { "<leader>sk", function() Snacks.picker.keymaps() end, desc = "[S]earch [K]eymaps" },
+    { "<leader>sf", function() Snacks.picker.files() end, desc = "[S]earch [F]iles" },
+    { "<leader>ss", function() Snacks.picker.projects() end, desc = "[S]earch [S]elect Projects" },
+    { "<leader>sw", function() Snacks.picker.grep_word() end, desc = "[S]earch current [W]ord" },
+    { "<leader>sd", function() Snacks.picker.diagnostics() end, desc = "[S]earch [D]iagnostics" },
+    { "<leader>sr", function() Snacks.picker.resume() end, desc = "[S]earch [R]esume" },
+    { "<leader>s.", function() Snacks.picker.recent() end, desc = '[S]earch Recent Files' },
+    { "<leader><leader>", function() Snacks.picker.buffers() end, desc = "Find existing buffers" },
+    {
+      "<leader>/",
+      function()
+        Snacks.picker.lines({
+          layout = { preset = "dropdown", preview = false },
+        })
+      end,
+      desc = "[/] Fuzzily search in current buffer",
+    },
+
+    -- Grep en archivos abiertos
+    {
+      "<leader>s/",
+      function()
+        Snacks.picker.grep({ buffers = true })
+      end,
+      desc = "[S]earch [/] in Open Files",
+    },
+
+    -- Buscar en la configuración de Neovim
+    {
+      "<leader>sc",
+      function()
+        Snacks.picker.files({ cwd = vim.fn.stdpath("config") })
+      end,
+      desc = "[S]earch Neovim [C]onfig files",
+    },
+
+    -- Grep solo en el archivo actual (Tu antiguo <leader>f)
+    {
+      "<leader>f",
+      function()
+        Snacks.picker.grep({ filter = { paths = { vim.fn.expand("%:p") } } })
+      end,
+      desc = "Grep in current file",
+    },
+
+    -- Lógica personalizada de archivos asociados (Tu antiguo <leader>po)
+    {
+      "<leader>po",
+      function()
+        local text = require("ext.utils").GetAssociatedFiles()
+        Snacks.picker.files({
+          pattern = text,
+          layout = { preset = "ivy" },
+        })
+      end,
+      desc = "Jump to related files",
+    },
     {
       "<leader>nh",
       function() Snacks.notifier.show_history() end,

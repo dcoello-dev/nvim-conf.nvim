@@ -1,21 +1,20 @@
 return {
   'saghen/blink.cmp',
-  dependencies = { 
+  dependencies = {
     'rafamadriz/friendly-snippets',
     'moyiz/blink-emoji.nvim'
   },
   version = '1.*',
 
-  ---@module 'blink.cmp'
-  ---@type blink.cmp.Config
   opts = {
-    -- C-space: Open menu or open docs if already open
-    -- C-n/C-p or Up/Down: Select next/previous item
-    -- C-e: Hide menu
-    -- C-k: Toggle signature help (if signature.enabled = true)
-    -- tab on snippet to go to next field
-    keymap = { preset = 'default' },
-
+    keymap = {
+      preset = 'none',
+      ['<C-p>'] = { 'select_prev', 'fallback' },
+      ['<C-n>'] = { 'select_next', 'fallback' },
+      ['<Tab>'] = { 'accept', 'fallback' },
+      ['<C-space>'] = { 'show', 'show_documentation', 'hide_documentation' },
+      ['<C-e>'] = { 'hide' },
+    },
     appearance = {
       nerd_font_variant = 'mono'
     },
@@ -27,8 +26,8 @@ return {
         emoji = {
           module = "blink-emoji",
           name = "Emoji",
-          score_offset = 15, -- Tune by preference
-          opts = { insert = true }, -- Insert emoji (default) or complete its name
+          score_offset = 15,
+          opts = { insert = true },
           should_show_items = function()
             return vim.tbl_contains(
               { "gitcommit", "markdown" },

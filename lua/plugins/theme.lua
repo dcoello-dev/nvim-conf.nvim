@@ -1,10 +1,9 @@
 return {
   {
     'dcoello-dev/monokai-old.nvim',
-    lazy = false, -- make sure we load this during startup if it is your main colorscheme
-    priority = 1000, -- make sure to load this before all the other start plugins
+    lazy = false,
+    priority = 1000,
     config = function()
-      -- Load the colorscheme here
       vim.cmd.colorscheme 'monokai'
       vim.cmd.hi 'Comment gui=none'
       vim.api.nvim_set_hl(0, 'LineNr', {fg = '#ff4e00', bold = true})
